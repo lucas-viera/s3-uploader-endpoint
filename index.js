@@ -15,8 +15,18 @@ const storage = multer.diskStorage({
   },
 });
 
+//FileFilter: images only
+const fileFilter = (req, file, cb) => {
+  //se readme
+  if (file.mimetype.split("/")[0] === "image") {
+    cb(null, true);
+  } else {
+    cb(new Error("Incorrect file type"), false);
+  }
+};
+
 //Simple middleware
-const upload = multer({ dest: "uploads/" });
+const upload = multer({ dest: "uploads/", fileFilter });
 
 //Single file upload
 app.post("/uploadSingle", upload.single("file"), (req, res) => {
@@ -39,7 +49,12 @@ app.post("/multiUpload", multiUpload, (req, res) => {
   res.json({ status: "success" });
 });
 
-const namedUploads = multer({ storage });
+const namedUploads = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 1000000, files: 10 },
+});
+
 app.post("/namedUpload", namedUploads.array("file"), (req, res) => {
   res.json({ stats: "success" });
 });
