@@ -21,7 +21,7 @@ const fileFilter = (req, file, cb) => {
   if (file.mimetype.split("/")[0] === "image") {
     cb(null, true);
   } else {
-    cb(new Error("Incorrect file type"), false);
+    cb(new multer.MulterError("LIMIT_UNEXPECTED_FILE"), false);
   }
 };
 
@@ -52,11 +52,32 @@ app.post("/multiUpload", multiUpload, (req, res) => {
 const namedUploads = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 1000000, files: 10 },
+  limits: { fileSize: 1000000, files: 2 },
 });
 
 app.post("/namedUpload", namedUploads.array("file"), (req, res) => {
   res.json({ stats: "success" });
+});
+
+//Error handling
+app.use((error, req, res, next) => {
+  if (error instanceof multer.MulterError) {
+    if (error.code === "LIMIT_FILE_SIZE") {
+      return res.status(400).json({
+        message: "file is to large",
+      });
+    }
+    if (error.code === "LIMIT_FILE_COUNT") {
+      return res.status(400).json({
+        message: "too many files",
+      });
+    }
+    if (error.code === "LIMIT_UNEXPECTED_FILE") {
+      return res.status(400).json({
+        message: "invalid file type",
+      });
+    }
+  }
 });
 
 app.listen(4000, () => {
