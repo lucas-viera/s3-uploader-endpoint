@@ -4,7 +4,13 @@ const app = express();
 
 const upload = multer({ dest: "uploads/" }); //middleware
 
-app.post("/upload", upload.single("file"), (req, res) => {
+//Single file upload
+app.post("/uploadSingle", upload.single("file"), (req, res) => {
+  res.json({ status: "success" });
+});
+
+//Multiple files upload
+app.post("/uploadMultiple", upload.array("file"), (req, res) => {
   res.json({ status: "success" });
 });
 
