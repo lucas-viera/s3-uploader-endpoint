@@ -1,6 +1,19 @@
 const express = require("express");
 const multer = require("multer");
+const uuid = require("uuid").v4;
 const app = express();
+
+//Naming uploads
+const storage = multer.diskStorage({
+  destination: (req, res, cb) => {
+    cb(null, "namedUploads");
+  },
+  filename: (req, file, cb) => {
+    //destructure the file
+    const { originalname } = file; //see readme
+    cb(null, `${uuid()}-${originalname}`);
+  },
+});
 
 //Simple middleware
 const upload = multer({ dest: "uploads/" });
@@ -24,6 +37,11 @@ const multiUpload = upload.fields([
 app.post("/multiUpload", multiUpload, (req, res) => {
   console.log(req.files);
   res.json({ status: "success" });
+});
+
+const namedUploads = multer({ storage });
+app.post("/namedUpload", namedUploads.array("file"), (req, res) => {
+  res.json({ stats: "success" });
 });
 
 app.listen(4000, () => {
